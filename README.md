@@ -7,7 +7,7 @@ NPM INSTALL<br><br>
 NPM RUN DEV.<br>
 
 # Features
-Fully Searchable.
+Fully Searchable.<br>
 Drill in to view Bio of Film.<br>
 Official Trailers from Youtube.<br>
 If Aviable for Steaming, the approriate Streaming platform Icon will appear.
