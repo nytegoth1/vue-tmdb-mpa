@@ -15,12 +15,12 @@ Add to Favorites, View Favorites.<br>
 Ollama Chat. (Must have Ollama installed.) Using model: 'llama3.2'.<br>
 Drill into Actor with bio, and films they have appeared in.<br>
 
-<br><br>
+<br>
 
 # TODO
 Clean up some css in the Favorites Modal.
 May add Steaming ICONS in the Nav to auto populate based on Steaming Service.
-<br>
+<br><br>
 
 # SCREEN 1
 
