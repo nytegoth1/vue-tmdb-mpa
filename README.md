@@ -9,7 +9,7 @@ NPM RUN DEV.<br>
 
 # Features
 Fully Searchable.<br>
-Drill in to view Bio of Film.<br>
+Drill in to view Details of Film.<br>
 Official Trailers from Youtube.<br>
 If Aviable for Streaming, the approriate Streaming platform Icon will appear.<br>
 Add to Favorites, View Favorites.<br>
