@@ -10,6 +10,7 @@ NPM RUN DEV.<br><br>
 Fully Searchable.
 Drill in to view Bio of Film.<br>
 Official Trailers from Youtube.<br>
+If Aviable for Steaming, the approriate Streaming platform Icon will appear.
 Add to Favorites, View Favorites.<br>
 Ollama Chat. (Must have Ollama installed.) Using model: 'llama3.2'.<br>
 Drill into to Actor with bio, and films they have appeared in.<br>
