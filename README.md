@@ -8,11 +8,11 @@ NPM RUN DEV.<br><br>
 
 # Features
 Fully Searchable.
-Drill in to view Bio of Film.
-Official Trailers from Youtube.
-Add to Favorites, View Favorites.
-Ollama Chat. (Must have Ollama installed.) Using model: 'llama3.2'.
-Drill into to Actor with bio, and films they have appeared in.
+Drill in to view Bio of Film.<br>
+Official Trailers from Youtube.<br>
+Add to Favorites, View Favorites.<br>
+Ollama Chat. (Must have Ollama installed.) Using model: 'llama3.2'.<br>
+Drill into to Actor with bio, and films they have appeared in.<br>
 
 <br><br>
 
