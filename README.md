@@ -17,6 +17,11 @@ Drill into Actor with bio, and films they have appeared in.<br>
 
 <br><br>
 
+# TODO
+Clean up some css in the Favorites Modal.
+May add Steaming ICONS in the Nav to auto populate based on Steaming Service.
+<br>
+
 # SCREEN 1
 
 ![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/home.png?raw=true)
