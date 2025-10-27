@@ -4,7 +4,7 @@ vue-tmdb-mpa
 # Installation:
 GET an TMDB API KEY, add it in the .env file.<br><br>
 NPM INSTALL<br><br>
-NPM RUN DEV.<br><br>
+NPM RUN DEV.<br>
 
 # Features
 Fully Searchable.
