@@ -31,3 +31,9 @@ Drill into to Actor with bio, and films they have appeared in.<br>
 # SCREEN 3
 
 ![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/bio.png?raw=true)
+
+<br><br>
+
+# SCREEN 4
+
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/chat.png?raw=true)
