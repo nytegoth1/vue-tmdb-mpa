@@ -16,6 +16,18 @@ Drill into to Actor with bio, and films they have appeared in.<br>
 
 <br><br>
 
-# SCREEN
+# SCREEN 1
 
 ![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/home.png?raw=true)
+
+<br><br>
+
+# SCREEN 2
+
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/details.png?raw=true)
+
+<br><br>
+
+# SCREEN 3
+
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/bio.png?raw=true)
