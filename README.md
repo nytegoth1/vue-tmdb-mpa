@@ -1,6 +1,7 @@
 vue-tmdb-mpa
 # VUE.JS TMDB API CONNECT INCLUDING OLLAMA CHAT.
 <br>
+
 # Installation:
 GET an TMDB API KEY, add it in the .env file.<br><br>
 NPM INSTALL<br><br>
