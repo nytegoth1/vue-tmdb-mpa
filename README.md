@@ -18,7 +18,7 @@ Drill into Actor with bio, and films they have appeared in.<br>
 <br>
 
 # TODO
-Clean up some css in the Favorites Modal.
+Clean up some css in the Favorites Modal.<br>
 May add Steaming ICONS in the Nav to auto populate based on Steaming Service.
 <br><br>
 
