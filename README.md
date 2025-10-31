@@ -43,3 +43,9 @@ Drill into Actor with bio, and films they have appeared in.
 # SCREEN 4 OLLAMA CHAT
 
 ![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/chat2.png?raw=true)
+
+<br><br>
+
+# SCREEN 5 Favorits
+
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/favs.png?raw=true)
