@@ -105,7 +105,7 @@ export default {
 }
 
 .modal-container {
-  background: #222;
+  background-color: #1a1f3a;
   width: 90%;
   max-width: 900px;
   max-height: 90vh;
@@ -118,7 +118,10 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #333;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
 }
 
 .close-button {
@@ -145,9 +148,7 @@ export default {
 
 .favorite-item {
   display: flex;
-  background: #333;
-  border-radius: 4px;
-  overflow: hidden;
+  margin-bottom: 12px;
 }
 
 .favorite-poster {
@@ -176,13 +177,31 @@ export default {
 }
 
 .view-button {
-  background: #007bff;
-  color: white;
-  text-decoration: none;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  color: #b8bdd0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
+  width: 50%;
+}
+
+.view-button:hover {
+  background: linear-gradient(to bottom, #252a4a 0%, #1a1f3a 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 .remove-button {
-  background: #dc3545;
+  background: linear-gradient(to bottom, #e74c3c 0%, #c0392b 100%);
   color: white;
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
 }
 </style>

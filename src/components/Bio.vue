@@ -1,21 +1,19 @@
 <template>
   <div class="main topper">
-      <ul class="nav">
+    <ul class="nav">
       <li><router-link to="/">TMDB Movie Search</router-link></li>
     </ul>
-    </div>
+  </div>
   <div class="actor-bio">
     <div v-if="loading">Loading actor information...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    
+
     <div v-if="actorData" class="actor-container">
       <div class="actor-header">
         <div class="actor-image-container">
-          <img 
-            :src="actorData.profile_path ? 'https://image.tmdb.org/t/p/w500' + actorData.profile_path : 'https://placehold.co/500x750?text=No+Image'" 
-            :alt="actorData.name" 
-            class="actor-profile-image"
-          />
+          <img
+            :src="actorData.profile_path ? 'https://image.tmdb.org/t/p/w500' + actorData.profile_path : 'https://placehold.co/500x750?text=No+Image'"
+            :alt="actorData.name" class="actor-profile-image" />
         </div>
         <div class="actor-info">
           <h1>{{ actorData.name }}</h1>
@@ -38,11 +36,9 @@
         <div class="films-container">
           <div v-for="movie in sortedFilmography" :key="movie.id" class="film-card">
             <router-link :to="'/moviedetails/' + movie.id">
-              <img 
-                :src="movie.poster_path ? 'https://image.tmdb.org/t/p/w200' + movie.poster_path : 'https://placehold.co/200x300?text=No+Image'" 
-                :alt="movie.title" 
-                class="film-poster"
-              />
+              <img
+                :src="movie.poster_path ? 'https://image.tmdb.org/t/p/w200' + movie.poster_path : 'https://placehold.co/200x300?text=No+Image'"
+                :alt="movie.title" class="film-poster" />
             </router-link>
             <div class="film-info">
               <div class="film-title">{{ movie.title }}</div>
@@ -80,14 +76,14 @@ export default {
   computed: {
     sortedFilmography() {
       if (!this.credits || !this.credits.cast) return [];
-      
+
       // Sort by release date (newest first) and limit to top 200
       return [...this.credits.cast]
         .sort((a, b) => {
           // Handle missing release dates
           if (!a.release_date) return 1;  // Put items with no date at the end
           if (!b.release_date) return -1;
-          
+
           // Compare dates (newer movies first)
           return new Date(b.release_date) - new Date(a.release_date);
         })
@@ -101,20 +97,20 @@ export default {
     async fetchActorData() {
       this.loading = true;
       this.error = null;
-      
+
       try {
         // Fetch actor details
         const actorResponse = await axios.get(
           `https://api.themoviedb.org/3/person/${this.id}?api_key=${apiKey}&language=en-US`
         );
         this.actorData = actorResponse.data;
-        
+
         // Fetch actor's movie credits
         const creditsResponse = await axios.get(
           `https://api.themoviedb.org/3/person/${this.id}/movie_credits?api_key=${apiKey}&language=en-US`
         );
         this.credits = creditsResponse.data;
-        
+
         this.loading = false;
       } catch (err) {
         console.error('Error fetching actor data:', err);
@@ -124,23 +120,23 @@ export default {
     },
     formatDate(dateString) {
       if (!dateString) return 'Unknown';
-      
+
       const date = new Date(dateString);
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return date.toLocaleDateString('en-US', options);
     }
   },
-          // Navigate to home page
-    goToHome() {
-      this.currentPage = 1; // Reset the current page to 1
-      this.searchPage = 1; // Reset the search page
-      this.searchQuery = ''; // Reset the search query
-      window.scrollTo(0, 0);
-      localStorage.setItem('StoredPage', this.currentPage);
-      localStorage.setItem('selectedCategory', ''); // Clear selected category in localStorage
-      this.loadPopularMovies(); // Load popular movies
-      window.location.href = 'http://localhost:5173/';
-    },
+  // Navigate to home page
+  goToHome() {
+    this.currentPage = 1; // Reset the current page to 1
+    this.searchPage = 1; // Reset the search page
+    this.searchQuery = ''; // Reset the search query
+    window.scrollTo(0, 0);
+    localStorage.setItem('StoredPage', this.currentPage);
+    localStorage.setItem('selectedCategory', ''); // Clear selected category in localStorage
+    this.loadPopularMovies(); // Load popular movies
+    window.location.href = 'http://localhost:5173/';
+  },
 };
 
 </script>
@@ -165,6 +161,10 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
 }
 
 .actor-header {
@@ -182,6 +182,7 @@ export default {
   width: 100%;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
 }
 
 .actor-info {
@@ -235,11 +236,20 @@ export default {
   border-radius: 6px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #0f1329;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s;
+  cursor: pointer;
+  border: 1px solid #2d3454;
+  text-align: center;
 }
 
 .film-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
 }
 
 .film-poster {
@@ -271,63 +281,90 @@ export default {
 
 ul.nav {
   margin: 0;
-	width:100% !important;
-	left:0px;
+  width: 100% !important;
+  left: 0px;
   top: 0px;
-	position:fixed;
-	overflow:hidden;
-	height:auto;
-	background-color:rgba(255,255,255,1);
-	-webkit-box-shadow:0px 2px 1px rgba(50, 50, 50, 0.22);
-	-moz-box-shadow:0px 2px 1px rgba(50, 50, 50, 0.22);
-	box-shadow:0px 2px 1px rgba(50, 50, 50, 0.22);
-	padding-right:20px;
+  position: fixed;
+  overflow: hidden;
+  height: auto;
+  background-color: rgba(255, 255, 255, 1);
+  -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  padding-right: 20px;
   z-index: 100;
 }
+
 ul.nav li {
-	text-align:center;
-	font-family: monospace;
-	font-size: 22px;
-	color: #333333;
-	height:47.5px;
-	padding-left:20px;
-	padding-right:20px;
-	cursor:pointer;
-	padding-top:17.5px !important;
-	float: left;
-	list-style: none;
-	font-weight: 200;
-	border-left:1px solid rgba(0,0,0,.1);
-	background-color:none;
-	transition:background-color ease-in-out .5s;
-	-moz-transition:background-color ease-in-out .5s;
-	-webkit-transition:background-color ease-in-out .5s;
-	-o-transition:background-color ease-in-out .5s;
-	text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2);
+  text-align: center;
+  font-family: monospace;
+  font-size: 22px;
+  /* color: #333333; */
+  color: #ffffff;
+  height: 47.5px;
+  padding-left: 20px;
+  padding-right: 20px;
+  cursor: pointer;
+  padding-top: 17.5px !important;
+  float: left;
+  list-style: none;
+  font-weight: 200;
+  /* border-left: 1px solid rgba(0, 0, 0, .1); */
+  border-left: 1px solid rgba(118, 75, 162, 0.2);
+  background-color: none;
+  transition: background-color ease-in-out .5s;
+  -moz-transition: background-color ease-in-out .5s;
+  -webkit-transition: background-color ease-in-out .5s;
+  -o-transition: background-color ease-in-out .5s;
+  /* text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2);*/
 }
-ul.nav li a,a:visited,a:hover {
-	color: #666666;
-	text-decoration:none;
+
+ul.nav li a {
+  color: #ffffff;
+  text-decoration: none;
 }
+
+ul.nav li a:hover {
+  filter: drop-shadow(0 2px 10px rgba(102, 126, 234, 1.0));
+}
+
 ul.nav li:first-child {
-	font-weight:bold;
-	border-left:none;
+  font-weight: bold;
+  border-left: none;
   padding-right: 8rem;
 }
 
 ul.nav li:first-child:hover {
-  background-color:rgba(42, 42, 42, 0.0);
+  background-color: rgba(42, 42, 42, 0.0);
 }
 
 ul.nav li:hover {
-	background-color:rgba(42, 42, 42, 0.2);
+  background-color: rgba(42, 42, 42, 0.2);
 }
+
 ul.nav li.active {
-	background-color:rgba(42, 42, 42, 0.2);
+  background-color: rgba(42, 42, 42, 0.2);
 }
 
 #main {
   width: 100%;
+}
+
+.nav {
+  margin: 0;
+  width: 100% !important;
+  left: 0px;
+  top: 0px;
+  position: fixed;
+  overflow: hidden;
+  height: auto;
+  /* background-color: rgba(255, 255, 255, 1); */
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
+  padding-right: 20px;
+  z-index: 100;
 }
 
 .main {
@@ -336,5 +373,4 @@ ul.nav li.active {
   justify-content: center;
   margin-bottom: 80px;
 }
-
 </style>

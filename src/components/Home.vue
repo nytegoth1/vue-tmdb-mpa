@@ -15,7 +15,7 @@
         <div class="nav-menu" :class="{ 'is-active': isMenuOpen }">
           <ul class="nav-list">
             <li @click="goToHome">TMDB Movie Search</li>
-            <li class="nav-item" @click="fetchMoviesByCategory(28); closeMenu()">Action
+            <li class="nav-item" @click="fetchMoviesByCategory(28); closeMenu();">Action
 
             </li>
             <li class="nav-item" @click="fetchMoviesByCategory(12); closeMenu()">Adventure
@@ -42,24 +42,42 @@
       <div class="nav-overlay" :class="{ 'is-active': isMenuOpen }" @click="closeMenu"></div>
     </nav>
 
+    <nav class="provider-nav">
+      <div class="provider-container">
+        <h3 class="provider-title"></h3>
+        <div class="provider-list">
+          <button v-for="provider in providers" :key="provider.provider_id"
+            :class="['streaming-btn', { 'active': selectedProvider === provider.provider_id }]"
+            @click="filterByProvider(provider.provider_id)" :title="provider.provider_name">
+
+            <span class="provider-name">{{ provider.provider_name }}</span>
+          </button>
+          <button v-if="selectedProvider" class="provider-btn clear-btn" @click="clearProviderFilter">
+            <span>✕ Clear</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
     <!-- Search Input -->
     <input name="search" class="search" v-model="searchQuery" @input="searchMovies" type="text"
       placeholder="Search for a movie..." />
 
-    <div v-if="loading">Loading...</div>
+    <div class="loading-indicator" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- Movies List -->
     <div class="main" v-if="movies.length">
-      <div class="movie" v-for="movie in movies" :key="movie.id">
-        <h3>{{ movie.title }}</h3>
+      <div class="movie movie-card" v-for="movie in movies" :key="movie.id">
+        <!-- <h3>{{ movie.title }}</h3> -->
         <router-link :to="'/moviedetails/' + movie.id">
           <img
             :src="movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://placehold.co/250x375?text=No+Image'"
-            alt="Movie Poster" />
+            class="" alt="Movie Poster" />
         </router-link>
-        <p>Release Date: {{ movie.formattedReleaseDate }}</p>
-        <p>Rating: {{ movie.vote_average }}</p>
+        <p><span class="release-date">{{ movie.formattedReleaseDate }}</span> <span class="star-rating"> {{
+          movie.vote_average }}</span></p>
+        <p></p>
       </div>
     </div>
 
@@ -96,6 +114,8 @@ export default {
       searchPage: 1,
       selectedCategory: null,
       isMenuOpen: false,
+      providers: [], // Store list of available providers
+      selectedProvider: null, // Currently selected provider
     };
   },
   created() {
@@ -104,6 +124,8 @@ export default {
     if (!storedCategory) {
       this.loadPopularMovies();
     }
+    // Load available providers
+    this.loadProviders();
   },
   mounted() {
     // Check for stored category in localStorage
@@ -197,6 +219,53 @@ export default {
       }
     },
 
+    // Load available streaming providers
+    async loadProviders() {
+      try {
+        const url = `https://api.themoviedb.org/3/watch/providers/movie?api_key=${apiKey}&language=en-US&watch_region=US`;
+        const response = await axios.get(url);
+        // Get top streaming providers (you can adjust this list)
+        const popularProviders = [8, 9, 15, 337, 350, 386, 119, 1899, 2528]; // Netflix, Prime, Hulu, Disney+, Apple TV+, Peacock, HBO Max, Paramount+
+        this.providers = response.data.results.filter(p => popularProviders.includes(p.provider_id));
+      } catch (error) {
+        console.error('Error loading providers:', error);
+      }
+    },
+
+    // Filter movies by streaming provider
+    async filterByProvider(providerId) {
+      this.selectedProvider = providerId;
+      this.selectedCategory = null;
+      this.searchQuery = '';
+      this.currentPage = 1;
+      this.loading = true;
+      window.scrollTo(0, 0);
+
+      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_watch_providers=${providerId}&watch_region=US&page=${this.currentPage}`;
+
+      try {
+        const response = await axios.get(url);
+        const movies = response.data.results;
+
+        for (const movie of movies) {
+          this.formatReleaseDate(movie);
+        }
+
+        this.movies = movies;
+      } catch (error) {
+        console.error('Error fetching movies by provider:', error);
+        this.error = 'Error fetching movies';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // Clear provider filter
+    clearProviderFilter() {
+      this.selectedProvider = null;
+      this.loadPopularMovies();
+    },
+
     // Search for movies based on the query
     async searchMovies() {
       if (!this.searchQuery) {
@@ -256,6 +325,25 @@ export default {
           this.movies = [...this.movies, ...movies];
         } catch (err) {
           this.error = 'Error fetching more search results';
+        } finally {
+          this.loading = false;
+        }
+      } else if (this.selectedProvider) {
+        // Load more movies from selected provider
+        this.currentPage += 1;
+        const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_watch_providers=${this.selectedProvider}&watch_region=US&page=${this.currentPage}`;
+        try {
+          this.loading = true;
+          const response = await axios.get(url);
+          const movies = response.data.results;
+
+          for (const movie of movies) {
+            this.formatReleaseDate(movie);
+          }
+
+          this.movies = [...this.movies, ...movies];
+        } catch (err) {
+          this.error = 'Error fetching more provider movies';
         } finally {
           this.loading = false;
         }
@@ -346,6 +434,120 @@ export default {
   --section-gap: 160px;
 }
 
+/* Provider Navigation Styles */
+.provider-nav {
+  width: 100%;
+  padding: 15px 0;
+  position: relative;
+  top: 80px;
+  z-index: 90;
+}
+
+.provider-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.provider-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.provider-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.provider-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.provider-btn:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.provider-btn.active {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.provider-logo-nav {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.provider-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.clear-btn {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  font-weight: 600;
+}
+
+.clear-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-2px);
+}
+
+.clear-btn span {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .provider-nav {
+    top: 48px;
+  }
+
+  .provider-container {
+    padding: 0 10px;
+  }
+
+  .provider-btn {
+    min-width: 70px;
+    padding: 6px 8px;
+  }
+
+  .provider-logo-nav {
+    width: 35px;
+    height: 35px;
+  }
+
+  .provider-name {
+    font-size: 11px;
+    max-width: 70px;
+  }
+}
 
 ul.nav {
   margin: 0;
@@ -367,7 +569,8 @@ ul.nav-list li {
   text-align: center;
   font-family: monospace;
   font-size: 22px;
-  color: #333333;
+  /* color: #333333; */
+  color: #ffffff;
   height: 47.5px;
   padding-left: 20px;
   padding-right: 20px;
@@ -376,13 +579,14 @@ ul.nav-list li {
   float: left;
   list-style: none;
   font-weight: 200;
-  border-left: 1px solid rgba(0, 0, 0, .1);
+  /* border-left: 1px solid rgba(0, 0, 0, .1); */
+  border-left: 1px solid rgba(118, 75, 162, 0.2);
   background-color: none;
   transition: background-color ease-in-out .5s;
   -moz-transition: background-color ease-in-out .5s;
   -webkit-transition: background-color ease-in-out .5s;
   -o-transition: background-color ease-in-out .5s;
-  text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2);
+  /* text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2); */
 }
 
 ul.nav-list li a,
@@ -398,12 +602,12 @@ ul.nav-list li:first-child {
   padding-right: 8rem;
 }
 
-ul.nav-list li:first-child:hover {
-  background-color: rgba(42, 42, 42, 0.0);
-}
-
 ul.nav-list li:hover {
-  background-color: rgba(42, 42, 42, 0.2);
+  /* background-color: rgba(42, 42, 42, 0.2); */
+  /* box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3); */
+  /* border-color: #667eea; */
+  filter: drop-shadow(0 2px 10px rgba(102, 126, 234, 1.0));
+  /* x-offset y-offset blur-radius color */
 }
 
 ul.nav-list li.active {
@@ -527,7 +731,7 @@ div:hover>.movie-overview {
 body {
   min-height: 100vh;
   color: var(--color-text);
-  background-color: #181818;
+  /* background-color: #181818; */
   transition:
     color 0.5s,
     background-color 0.5s;
@@ -560,13 +764,23 @@ body {
 
 .morebutton {
   padding: 10px 20px;
-  background-color: #007bff;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  color: #b8bdd0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   width: 50%;
   margin: 0 auto;
+}
+
+.morebutton:hover {
+  background: linear-gradient(to bottom, #252a4a 0%, #1a1f3a 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 ul.nav {
@@ -640,6 +854,15 @@ ul.nav li.active {
 
 .search {
   margin-top: 85px;
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: 1px solid #2d3454;
+  /* border-radius: 25px; */
+  outline: none;
+  transition: all 0.3s;
+  background: #0f1329;
+  color: #ffffff;
 }
 
 input:focus-visible {
@@ -648,9 +871,10 @@ input:focus-visible {
 
 
 .loading-indicator {
-  display: flex;
+  width: 100%;
   gap: 4px;
   padding: 8px 0;
+  text-align: center;
 }
 
 .loading-indicator span {
@@ -693,7 +917,8 @@ input:focus-visible {
   position: fixed;
   overflow: hidden;
   height: auto;
-  background-color: rgba(255, 255, 255, 1);
+  /* background-color: rgba(255, 255, 255, 1); */
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
   -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
   -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
   box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
@@ -792,11 +1017,6 @@ input:focus-visible {
   white-space: nowrap;
 }
 
-.nav-link:hover {
-  background-color: rgba(255, 180, 0, 0.1);
-  color: #ffb400;
-}
-
 .nav-link.router-link-active {
   background-color: rgba(255, 180, 0, 0.2);
   color: #ffb400;
@@ -823,7 +1043,7 @@ input:focus-visible {
     right: -100%;
     height: 100vh;
     width: 280px;
-    background-color: #fff;
+    background-color: #1a1f3a;
     flex-direction: column;
     padding-top: 80px;
     transition: right 0.3s ease;
@@ -881,6 +1101,9 @@ input:focus-visible {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     z-index: 99;
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
   }
 
   .nav-overlay.is-active {
@@ -1012,10 +1235,59 @@ input:focus-visible {
 }
 
 footer.app-footer {
-  background-color: #222;
   color: #fff;
   text-align: center;
   padding: 1rem 0;
   width: 100%;
+}
+
+.movie-card {
+  background: #0f1329;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s;
+  cursor: pointer;
+  border: 1px solid #2d3454;
+  text-align: center;
+}
+
+.movie-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+}
+
+.streaming-btn {
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  color: #b8bdd0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
+}
+
+.streaming-btn:hover {
+  background: linear-gradient(to bottom, #252a4a 0%, #1a1f3a 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.star-rating:before {
+  content: "★";
+  /* Unicode star character */
+  color: gold;
+}
+
+.release-date {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-right: 12px;
 }
 </style>

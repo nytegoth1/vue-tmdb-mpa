@@ -6,6 +6,7 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- Movies List -->
+
     <div class="main movie-inner" v-if="movies.length">
       <div class="movie-content" v-for="movie in movies" :key="movie.id">
         <div class="main">
@@ -48,7 +49,9 @@
         </div>
 
         <div class="movie-poster">
-          <img class="movie-img" :src="'https://image.tmdb.org/t/p/w500' + movie.poster_path" alt="Movie Poster" />
+          <img class="movie-img"
+            :src="movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://placehold.co/250x375?text=No+Image'"
+            alt="Movie Poster" />
         </div>
 
         <div class="movie-data">
@@ -69,8 +72,15 @@
             <p>No trailer available.</p>
           </div>
 
-          <div v-if="movie.providers && movie.providers.name" class="provider-section">
-            <img :src="movie.providers.logo" :alt="movie.providers.name" class="provider-logo" />
+          <div class="movie-overview" v-if="movie.providers && movie.providers.length > 0">
+            <h4>Now Streaming On:</h4>
+          </div>
+
+          <div v-if="movie.providers && movie.providers.length > 0" class="provider-section">
+            <div v-for="provider in movie.providers.slice(0, 3)" :key="provider.name" class="provider-item">
+              <img :src="provider.logo" :alt="provider.name" class="provider-logo" />
+              <!-- <span class="provider-type">{{ provider.type }}</span> -->
+            </div>
           </div>
 
         </div>
@@ -80,16 +90,13 @@
     <div class="movieChar" v-if="movies.length" v-for="movie in movies" :key="movie.id">
       <h4 class="movie-fields">Cast</h4>
       <div class="actorsz" v-if="movie.credits && movie.credits.cast.length > 0">
-        <div v-for="actor in getTopCast(movie.credits.cast)" :key="actor.id">
+        <div class="movie-card" v-for="actor in getTopCast(movie.credits.cast)" :key="actor.id">
           <div class="movie-tags">{{ actor.name }}</div>
           <img
             :src="actor.profile_path ? 'https://image.tmdb.org/t/p/w500' + actor.profile_path : 'https://placehold.co/250x375?text=No+Image'"
             :alt="actor.name" class="actor-image" @click="viewActorBio(actor)" />
 
           <div class="movie-tags">as {{ actor.character }}</div>
-          <br>
-          <br>
-          <br>
           <br>
           <br>
         </div>
@@ -131,7 +138,7 @@
     <div class="ollama-chat-input">
       <textarea v-model="userMessage" @keyup.enter.exact="sendMessage" placeholder="Ask about the movie or actors..."
         rows="2"></textarea>
-      <button @click="sendMessage" :disabled="isLoading || !userMessage.trim()">
+      <button class="send-button" @click="sendMessage" :disabled="isLoading || !userMessage.trim()">
         Send
       </button>
     </div>
@@ -402,18 +409,47 @@ export default {
 
       try {
         const response = await axios.get(url);
-        const providerData = response.data.results?.US?.flatrate?.[0];
-        if (providerData) { //console.log(providerData.provider_id);
-          movie.providers = {
-            name: providerData.provider_name || '',
-            logo: providerData.logo_path ? `https://image.tmdb.org/t/p/w92${providerData.logo_path}` : ''
-          };
+        const usProviders = response.data.results?.US;
+
+        if (usProviders) {
+          movie.providers = [];
+
+          // Add all available provider types
+          if (usProviders.flatrate) {
+            usProviders.flatrate.forEach(provider => {
+              movie.providers.push({
+                name: provider.provider_name,
+                logo: provider.logo_path ? `https://image.tmdb.org/t/p/w92${provider.logo_path}` : '',
+                type: 'Streaming'
+              });
+            });
+          }
+
+          // if (usProviders.rent) {
+          //   usProviders.rent.forEach(provider => {
+          //     movie.providers.push({
+          //       name: provider.provider_name,
+          //       logo: provider.logo_path ? `https://image.tmdb.org/t/p/w92${provider.logo_path}` : '',
+          //       type: 'Rent'
+          //     });
+          //   });
+          // }
+
+          // if (usProviders.buy) {
+          //   usProviders.buy.forEach(provider => {
+          //     movie.providers.push({
+          //       name: provider.provider_name,
+          //       logo: provider.logo_path ? `https://image.tmdb.org/t/p/w92${provider.logo_path}` : '',
+          //       type: 'Buy'
+          //     });
+          //   });
+          // }
         } else {
-          movie.providers = { name: '', logo: '' };
+          movie.providers = [];
         }
       } catch (err) {
         console.error(`Error fetching providers for movie ${movie.title}:`, err);
-        movie.providers = { name: '', logo: '' };
+        movie.providers = [];
       }
     },
 
@@ -612,6 +648,10 @@ export default {
 </script>
 
 <style scoped>
+body {
+  /* background: #0a0e27; */
+}
+
 /* Add modal styles */
 .modal {
   display: flex;
@@ -631,7 +671,7 @@ export default {
   background-color: #000000;
   margin: auto;
   padding: 20px;
-  border: 1px solid #888;
+  border: 1px solid #2d3454;
   width: 80%;
   max-width: 800px;
 }
@@ -683,7 +723,7 @@ input {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 48px;
+  margin-top: 64px;
 }
 
 .topper {
@@ -714,7 +754,8 @@ ul.nav-list li {
   text-align: center;
   font-family: monospace;
   font-size: 22px;
-  color: #333333;
+  /* color: #333333; */
+  color: #ffffff;
   height: 47.5px;
   padding-left: 20px;
   padding-right: 20px;
@@ -723,19 +764,20 @@ ul.nav-list li {
   float: left;
   list-style: none;
   font-weight: 200;
-  border-left: 1px solid rgba(0, 0, 0, .1);
+  /* border-left: 1px solid rgba(0, 0, 0, .1); */
+  border-left: 1px solid rgba(118, 75, 162, 0.2);
   background-color: none;
   transition: background-color ease-in-out .5s;
   -moz-transition: background-color ease-in-out .5s;
   -webkit-transition: background-color ease-in-out .5s;
   -o-transition: background-color ease-in-out .5s;
-  text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2);
+  /* text-shadow: 0px -3px 3px rgba(255, 255, 255, 0.2);*/
 }
 
 ul.nav-list li a,
 a:visited,
 a:hover {
-  color: #666666;
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -750,7 +792,7 @@ ul.nav-list li:first-child:hover {
 }
 
 ul.nav-list li:hover {
-  background-color: rgba(42, 42, 42, 0.2);
+  filter: drop-shadow(0 2px 10px rgba(102, 126, 234, 1.0));
 }
 
 ul.nav-list li.active {
@@ -889,14 +931,37 @@ body {
   flex-wrap: wrap;
 }
 
+.movie-card {
+  background: #0f1329;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s;
+  cursor: pointer;
+  border: 1px solid #2d3454;
+  text-align: center;
+  margin: 12px;
+}
+
+.movie-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+}
+
 .actor-image {
   width: 250px;
-  padding: 22px;
-  margin-right: 12px;
+  padding: 0 12px 0 12px;
   margin-bottom: 18px;
-  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+  background: #0f1329;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s;
+  cursor: pointer;
+  text-align: center;
   cursor: pointer;
 }
+
 
 .movie-content {
   display: flex;
@@ -911,12 +976,21 @@ body {
 }
 
 .movie-poster {
-  flex: 1 1 40%;
   -webkit-box-align: center;
   align-items: center;
   -webkit-box-pack: center;
   justify-content: center;
   display: flex;
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+  background: #0f1329;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s;
+  border: 1px solid #2d3454;
+  text-align: center;
 }
 
 .movie-title {
@@ -926,7 +1000,6 @@ body {
   color: var(--color-primary-dark);
   letter-spacing: -0.5px;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
 }
 
 .movie-img {
@@ -943,7 +1016,7 @@ body {
   max-width: 60%;
   padding: 0rem 2rem 0rem 2rem;
   flex: 1 1 60%;
-  margin-top: -280px;
+  margin-top: -180px;
 }
 
 .movie-inner {
@@ -967,6 +1040,7 @@ body {
 
 .movie-tags {
   text-align: center;
+  padding: 18px 0 18px 0;
 }
 
 .movie-fields {
@@ -979,14 +1053,25 @@ body {
 }
 
 .modalButton {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  padding: 12px 24px;
+  font-size: 0.95rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  color: #b8bdd0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
   width: 50%;
-  margin: 0 auto;
+}
+
+.modalButton:hover {
+  background: linear-gradient(to bottom, #252a4a 0%, #1a1f3a 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 .movie-rating {
@@ -1068,7 +1153,7 @@ body {
   right: 60px;
   width: 350px;
   height: 500px;
-  background-color: #222;
+  background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -1079,11 +1164,11 @@ body {
 
 .ollama-chat-header {
   padding: 12px 16px;
-  background-color: #333;
+  background: linear-gradient(to bottom, #252a4a 0%, #1a1f3a 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #ffffff;
 }
 
 .ollama-chat-header h3 {
@@ -1138,21 +1223,21 @@ body {
 
 .message.user {
   align-self: flex-end;
-  background-color: #0b6fcb;
+  background: #0f1329;
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message.assistant {
   align-self: flex-start;
-  background-color: #333;
+  background: #0f1329;
   color: #fff;
   border-bottom-left-radius: 4px;
 }
 
 .message.system {
   align-self: center;
-  background-color: #444;
+  background: #0f1329;
   color: #ccc;
   font-style: italic;
   font-size: 12px;
@@ -1168,15 +1253,40 @@ body {
   gap: 8px;
 }
 
+.send-button {
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
+  color: #b8bdd0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d3454;
+}
+
 .ollama-chat-input textarea {
   flex: 1;
-  background-color: #333;
-  border: 1px solid #444;
+  border: 1px solid #2d3454;
+  /* border-radius: 25px; */
+  outline: none;
+  transition: all 0.3s;
+  background: #0f1329;
+  color: #ffffff;
   border-radius: 4px;
-  color: #fff;
   padding: 8px 12px;
   resize: none;
   font-family: inherit;
+}
+
+.message-content {
+  white-space: pre-wrap;
+  background: #0f1329;
+  /* Preserve whitespace and line breaks */
+  word-wrap: break-word;
+  /* Break long words */
 }
 
 .ollama-chat-input button {
@@ -1253,7 +1363,8 @@ body {
   position: fixed;
   overflow: hidden;
   height: auto;
-  background-color: rgba(255, 255, 255, 1);
+  /* background-color: rgba(255, 255, 255, 1); */
+  background: linear-gradient(to bottom, #1a1f3a 0%, #0f1329 100%);
   -webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
   -moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
   box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.22);
@@ -1573,5 +1684,12 @@ body {
   .nav-link {
     transition: none;
   }
+}
+
+.provider-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
 }
 </style>

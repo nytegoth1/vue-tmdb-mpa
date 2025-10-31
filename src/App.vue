@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view></router-view>  <!-- Render the active route component -->
+    <router-view></router-view> <!-- Render the active route component -->
   </div>
 </template>
 
@@ -14,8 +14,8 @@ export default {
 body {
   margin: 0 !important;
   padding: 0 !important;
-  background-color: #181818;
+  /* background-color: #181818; */
+  background-color: #1a1f3a;
   color: #ffffff;
 }
 </style>
-
