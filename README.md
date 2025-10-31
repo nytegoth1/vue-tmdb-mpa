@@ -18,8 +18,8 @@ Drill into Actor with bio, and films they have appeared in.
 <br>
 
 # TODO
-Clean up some css in the Favorites Modal.<br>
-May add Streaming ICONS in the Nav to auto populate based on Streaming Service.
+~~Clean up some css in the Favorites Modal~~.<br>
+~~May add Streaming ICONS in the Nav to auto populate based on Streaming Service.~~
 <br><br>
 
 # SCREEN 1 HOME SCREEN
