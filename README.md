@@ -24,22 +24,22 @@ May add Streaming ICONS in the Nav to auto populate based on Streaming Service.
 
 # SCREEN 1 HOME SCREEN
 
-![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/home.png?raw=true)
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/home2.png?raw=true)
 
 <br><br>
 
 # SCREEN 2 MOVIE DETAILS
 
-![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/details.png?raw=true)
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/details2.png?raw=true)
 
 <br><br>
 
 # SCREEN 3 BIO
 
-![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/bio.png?raw=true)
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/bio2.png?raw=true)
 
 <br><br>
 
 # SCREEN 4 OLLAMA CHAT
 
-![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/chat.png?raw=true)
+![alt text](https://github.com/nytegoth1/vue-tmdb-mpa/blob/main/images/chat2.png?raw=true)
