@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <router-view></router-view> <!-- Render the active route component -->
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',  // Ensure the name is correct
+  name: 'App',
 };
 </script>
 
@@ -19,3 +19,4 @@ body {
   color: #ffffff;
 }
 </style>
+
