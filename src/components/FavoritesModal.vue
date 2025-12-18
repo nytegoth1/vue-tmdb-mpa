@@ -61,7 +61,6 @@ export default {
     async viewDetails(movieId) {
       this.close();
       await this.$router.push(`/moviedetails/${movieId}`);
-      // Emit an event to notify parent to refresh data
       this.$emit('movie-selected', movieId);
     },
     removeFromFavorites(movieId) {
