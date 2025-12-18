@@ -3,19 +3,16 @@
     <nav class="mobile-nav">
       <div class="nav-container">
 
-
-        <!-- Mobile Menu Toggle -->
         <button class="mobile-menu-toggle" @click="toggleMenu" :aria-expanded="isMenuOpen">
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
         </button>
 
-        <!-- Navigation Links -->
         <div class="nav-menu" :class="{ 'is-active': isMenuOpen }">
           <ul class="nav-list">
             <li @click="goToHome">TMDB Movie Search</li>
-            <li class="nav-item" @click="fetchMoviesByCategory(28); closeMenu();">Action
+            <li class="nav-item" @click="fetchMoviesByCategory(28); closeMenu()">Action
 
             </li>
             <li class="nav-item" @click="fetchMoviesByCategory(12); closeMenu()">Adventure
@@ -38,7 +35,6 @@
         </div>
       </div>
 
-      <!-- Overlay for mobile -->
       <div class="nav-overlay" :class="{ 'is-active': isMenuOpen }" @click="closeMenu"></div>
     </nav>
 
@@ -52,21 +48,20 @@
 
             <span class="provider-name">{{ provider.provider_name }}</span>
           </button>
-          <button v-if="selectedProvider" class="provider-btn clear-btn" @click="clearProviderFilter">
+          <!-- <button v-if="selectedProvider" class="provider-btn clear-btn" @click="clearProviderFilter">
             <span>✕ Clear</span>
-          </button>
+          </button> -->
+          <div></div>
         </div>
       </div>
     </nav>
 
-    <!-- Search Input -->
     <input name="search" class="search" v-model="searchQuery" @input="searchMovies" type="text"
       placeholder="Search for a movie..." />
 
     <div class="loading-indicator" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <!-- Movies List -->
     <div class="main" v-if="movies.length">
       <div class="movie movie-card" v-for="movie in movies" :key="movie.id">
         <!-- <h3>{{ movie.title }}</h3> -->
@@ -81,15 +76,13 @@
       </div>
     </div>
 
-    <!-- Load More Button -->
     <div v-if="!loading && movies.length > 0" class="load-more">
       <button class="morebutton" @click="loadMoreMovies" :disabled="loading">
         {{ loading ? 'Loading...' : 'Load More' }}
       </button>
     </div>
 
-    <!-- No Results Message -->
-    <div v-if="!movies.length && !loading && !error">No results found</div>
+    <div class="nores" v-if="!movies.length && !loading && !error">No results found</div>
   </div>
   <footer class="app-footer">
     <div class="container">
@@ -106,7 +99,7 @@ export default {
   name: 'App',
   data() {
     return {
-      movies: [], // Movies array to store results
+      movies: [],
       loading: false,
       error: null,
       searchQuery: '',
@@ -114,21 +107,18 @@ export default {
       searchPage: 1,
       selectedCategory: null,
       isMenuOpen: false,
-      providers: [], // Store list of available providers
-      selectedProvider: null, // Currently selected provider
+      providers: [],
+      selectedProvider: null,
     };
   },
   created() {
-    // Load popular movies only if no category is stored
     const storedCategory = localStorage.getItem('selectedCategory');
     if (!storedCategory) {
       this.loadPopularMovies();
     }
-    // Load available providers
     this.loadProviders();
   },
   mounted() {
-    // Check for stored category in localStorage
     const storedCategory = localStorage.getItem('selectedCategory');
     const storedPage = localStorage.getItem('StoredPage');
     this.currentPage = storedPage ? parseInt(storedPage) : 1;
@@ -169,13 +159,12 @@ export default {
       this.selectedCategory = categoryId;
       localStorage.setItem('selectedCategory', categoryId);
 
-      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${this.currentPage}`;
+      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${this.currentPage}&include_adult=false`;
 
       try {
         const response = await axios.get(url);
         const movies = response.data.results;
 
-        // For each movie, format the release date
         for (const movie of movies) {
           this.formatReleaseDate(movie);
         }
@@ -192,7 +181,6 @@ export default {
       }
     },
 
-    // Fetch popular movies
     async loadPopularMovies() {
       this.loading = true;
       this.selectedCategory = 'null';
@@ -200,13 +188,11 @@ export default {
       this.searchPage = 1;
       const storedPage = localStorage.getItem('StoredPage');
       this.currentPage = storedPage ? parseInt(storedPage) : 1;
-      const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=${this.currentPage}`;
+      const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=${this.currentPage}&include_adult=false`;
 
       try {
         const response = await axios.get(url);
         const movies = response.data.results;
-
-        // For each movie, format the release date
         for (const movie of movies) {
           this.formatReleaseDate(movie);
         }
@@ -219,12 +205,10 @@ export default {
       }
     },
 
-    // Load available streaming providers
     async loadProviders() {
       try {
-        const url = `https://api.themoviedb.org/3/watch/providers/movie?api_key=${apiKey}&language=en-US&watch_region=US`;
+        const url = `https://api.themoviedb.org/3/watch/providers/movie?api_key=${apiKey}&language=en-US&watch_region=US&include_adult=false`;
         const response = await axios.get(url);
-        // Get top streaming providers (you can adjust this list)
         const popularProviders = [8, 9, 15, 337, 350, 386, 119, 1899, 2528]; // Netflix, Prime, Hulu, Disney+, Apple TV+, Peacock, HBO Max, Paramount+
         this.providers = response.data.results.filter(p => popularProviders.includes(p.provider_id));
       } catch (error) {
@@ -232,7 +216,6 @@ export default {
       }
     },
 
-    // Filter movies by streaming provider
     async filterByProvider(providerId) {
       this.selectedProvider = providerId;
       this.selectedCategory = null;
@@ -260,32 +243,27 @@ export default {
       }
     },
 
-    // Clear provider filter
     clearProviderFilter() {
       this.selectedProvider = null;
       this.loadPopularMovies();
     },
 
-    // Search for movies based on the query
     async searchMovies() {
       if (!this.searchQuery) {
         this.loadPopularMovies();
         return;
       }
 
-      // Reset search page to 1 when starting a new search
       this.searchPage = 1;
       this.loading = true;
       this.error = null;
 
-      // Search for movies using the TMDB API
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${this.searchQuery}&language=en-US&page=${this.searchPage}`;
-
+      const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${this.searchQuery}&language=en-US&page=${this.searchPage}&include_adult=false`;
+      console.log('Searching movies with URL:', url);
       try {
         const response = await axios.get(url);
         const movies = response.data.results;
 
-        // For each movie, format the release date
         for (const movie of movies) {
           this.formatReleaseDate(movie);
         }
@@ -298,7 +276,6 @@ export default {
       }
     },
 
-    // Format the release date to "DD/MM/YYYY"
     formatReleaseDate(movie) {
       if (movie.release_date) {
         const releaseDate = new Date(movie.release_date);
@@ -312,7 +289,8 @@ export default {
     async loadMoreMovies() {
       if (this.searchQuery) {
         this.searchPage += 1;
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${this.searchQuery}&language=en-US&page=${this.searchPage}`;
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${this.searchQuery}&language=en-US&page=${this.searchPage}&include_adult=false`;
+        console.log('Searching movies with URL:', url);
         try {
           this.loading = true;
           const response = await axios.get(url);
@@ -329,9 +307,8 @@ export default {
           this.loading = false;
         }
       } else if (this.selectedProvider) {
-        // Load more movies from selected provider
         this.currentPage += 1;
-        const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_watch_providers=${this.selectedProvider}&watch_region=US&page=${this.currentPage}`;
+        const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_watch_providers=${this.selectedProvider}&watch_region=US&page=${this.currentPage}&include_adult=false`;
         try {
           this.loading = true;
           const response = await axios.get(url);
@@ -348,7 +325,6 @@ export default {
           this.loading = false;
         }
       } else {
-        // If not in search mode, increment category or popular page
         this.currentPage += 1;
         localStorage.setItem('StoredPage', this.currentPage);
 
@@ -358,16 +334,15 @@ export default {
           // For popular movies
           try {
             this.loading = true;
-            const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=${this.currentPage}`;
+            const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=${this.currentPage}&include_adult=false`;
             const response = await axios.get(url);
             const movies = response.data.results;
 
-            // Format release dates
             for (const movie of movies) {
               this.formatReleaseDate(movie);
             }
 
-            this.movies = [...this.movies, ...movies]; // Append new movies
+            this.movies = [...this.movies, ...movies];
           } catch (err) {
             this.error = 'Error fetching more movies';
           } finally {
@@ -377,7 +352,6 @@ export default {
       }
     },
 
-    // Go to home and load the first page of popular movies
     goToHome() {
       this.closeMenu();
       this.currentPage = 1;
@@ -419,7 +393,6 @@ export default {
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
 
-/* semantic color variables for this project */
 :root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
@@ -434,7 +407,6 @@ export default {
   --section-gap: 160px;
 }
 
-/* Provider Navigation Styles */
 .provider-nav {
   width: 100%;
   padding: 15px 0;
@@ -518,6 +490,15 @@ export default {
   background-color: #c82333;
   border-color: #bd2130;
   transform: translateY(-2px);
+}
+
+.nores {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 50px;
+  color: #ffb400;
+  width: 100%;
+  text-align: center;
 }
 
 .clear-btn span {
@@ -651,9 +632,6 @@ section {
   transform: translate3d(0, 10%, 0);
   transition: opacity 350ms ease-in-out 150ms, transform 350ms ease-in-out 150ms;
 }
-
-/* Hover effect for movie overview */
-
 
 .movie-overview {
   background-color: rgba(255, 255, 255, 0.8);
@@ -952,7 +930,6 @@ input:focus-visible {
   letter-spacing: 1px;
 }
 
-/* Hamburger Menu Button */
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -986,7 +963,6 @@ input:focus-visible {
   transform: rotate(-45deg) translate(7px, -7px);
 }
 
-/* Navigation Menu */
 .nav-menu {
   display: flex;
   align-items: center;
@@ -1026,12 +1002,10 @@ input:focus-visible {
   font-size: 1.2rem;
 }
 
-/* Overlay */
 .nav-overlay {
   display: none;
 }
 
-/* Mobile Styles */
 @media (max-width: 768px) {
   .mobile-menu-toggle {
     display: flex;
@@ -1073,7 +1047,6 @@ input:focus-visible {
     display: block;
     width: 100%;
     min-height: 48px;
-    /* Better touch target */
     display: flex;
     align-items: center;
   }
@@ -1112,7 +1085,6 @@ input:focus-visible {
   }
 }
 
-/* Tablet Styles */
 @media (min-width: 769px) and (max-width: 1024px) {
   .nav-list {
     gap: 0.25rem;
@@ -1128,7 +1100,6 @@ input:focus-visible {
   }
 }
 
-/* Medium Mobile Styles */
 @media (max-width: 768px) {
   .ollama-chat-container {
     position: fixed;
@@ -1155,7 +1126,6 @@ input:focus-visible {
   }
 }
 
-/* Small Mobile Styles */
 @media (max-width: 480px) {
   .nav-container {
     padding: 0.75rem;
@@ -1223,7 +1193,6 @@ input:focus-visible {
   }
 }
 
-/* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
 
   .nav-menu,
@@ -1280,8 +1249,7 @@ footer.app-footer {
 }
 
 .star-rating:before {
-  content: "★";
-  /* Unicode star character */
+  content: "*";
   color: gold;
 }
 
