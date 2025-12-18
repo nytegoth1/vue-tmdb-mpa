@@ -5,8 +5,6 @@
     <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <!-- Movies List -->
-
     <div class="main movie-inner" v-if="movies.length">
       <div class="movie-content" v-for="movie in movies" :key="movie.id">
         <div class="main">
@@ -15,15 +13,12 @@
           <nav class="mobile-nav">
             <div class="nav-container">
 
-
-              <!-- Mobile Menu Toggle -->
               <button class="mobile-menu-toggle" @click="toggleMenu" :aria-expanded="isMenuOpen">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
               </button>
 
-              <!-- Navigation Links -->
               <div class="nav-menu" :class="{ 'is-active': isMenuOpen }">
                 <ul class="nav-list">
                   <li><router-link to="/" class="nostyle" @click="closeMenu">TMDB Movie Search</router-link></li>
@@ -43,7 +38,6 @@
               </div>
             </div>
 
-            <!-- Overlay for mobile -->
             <div class="nav-overlay" :class="{ 'is-active': isMenuOpen }" @click="closeMenu"></div>
           </nav>
         </div>
@@ -105,7 +99,6 @@
 
   </div>
 
-  <!-- Modal -->
   <div v-if="isModalOpen" class="modal">
     <div class="modal-content">
       <span class="close" @click="closeModal">&times;</span>
@@ -115,11 +108,8 @@
     </div>
   </div>
 
-  <!-- No Results Message -->
   <div v-if="!movies.length && !loading && !error">No results found</div>
 
-
-  <!-- Ollama Chat UI -->
   <div class="ollama-chat-container" v-if="showOllamaChat">
     <div class="ollama-chat-header">
       <h3>TMDB Movie Assistant</h3>
@@ -157,13 +147,13 @@ export default {
   name: 'App',
   data() {
     return {
-      movies: [], // Movies array to store results
+      movies: [],
       loading: false,
       error: null,
-      searchQuery: '', // Bound to the search input
-      trailer: null, // Store the trailer data
-      isModalOpen: false, // Modal state
-      favorites: this.getStoredFavorites(), // Store favorite movie IDs
+      searchQuery: '',
+      trailer: null,
+      isModalOpen: false,
+      favorites: this.getStoredFavorites(),
       showFavoritesModal: false,
       showOllamaChat: false,
       isMenuOpen: false,
@@ -178,7 +168,6 @@ export default {
     FavoritesModal
   },
   created() {
-    // Load popular movies when the app is created
     this.loadPopularMovies();
   },
   methods: {
@@ -214,7 +203,6 @@ export default {
     toggleOllamaChat() {
       this.showOllamaChat = !this.showOllamaChat;
       if (this.showOllamaChat && this.movies.length > 0) {
-        // Add movie context when opening chat
         const movie = this.movies[0];
         const movieContext = `Currently viewing: ${movie.title} (${movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'})`;
         this.chatMessages = [
@@ -226,14 +214,11 @@ export default {
 
     async sendMessage() {
       if (!this.userMessage.trim() || this.isLoading) return;
-
-      // Add user message to chat
       this.chatMessages.push({ role: 'user', content: this.userMessage });
       const userQuery = this.userMessage;
       this.userMessage = '';
       this.isLoading = true;
 
-      // Scroll to bottom of chat
       this.$nextTick(() => {
         if (this.$refs.chatMessages) {
           this.$refs.chatMessages.scrollTop = this.$refs.chatMessages.scrollHeight;
@@ -241,7 +226,6 @@ export default {
       });
 
       try {
-        // Prepare movie context
         let context = '';
         if (this.movies.length > 0) {
           const movie = this.movies[0];
@@ -249,7 +233,6 @@ export default {
           context += `Release Date: ${movie.release_date || 'Unknown'}\n`;
           context += `Overview: ${movie.overview || 'No overview available'}\n`;
 
-          // Add cast information if available
           if (movie.credits && movie.credits.cast && movie.credits.cast.length > 0) {
             context += 'Cast: ' + movie.credits.cast.slice(0, 5).map(actor =>
               `${actor.name} as ${actor.character}`
@@ -257,7 +240,6 @@ export default {
           }
         }
 
-        // Call Ollama API
         const response = await fetch('http://localhost:11434/api/chat', {
           method: 'POST',
           headers: {
@@ -285,7 +267,6 @@ export default {
         }
 
         const data = await response.json();
-        // Add assistant response to chat
         this.chatMessages.push({
           role: 'assistant',
           content: data.message?.content || 'Sorry, I couldn\'t process your request.'
@@ -299,7 +280,6 @@ export default {
         });
       } finally {
         this.isLoading = false;
-        // Scroll to bottom of chat
         this.$nextTick(() => {
           if (this.$refs.chatMessages) {
             this.$refs.chatMessages.scrollTop = this.$refs.chatMessages.scrollHeight;
@@ -321,7 +301,6 @@ export default {
       localStorage.setItem('favorites', JSON.stringify(this.favorites))
     },
 
-    // Add to Favorites Feature
     toggleFavorite(movie) {
       const id = movie.id;
       if (this.isFavorite(id)) {
@@ -342,7 +321,7 @@ export default {
         return [];
       }
     },
-    // Fetch popular movies
+
     async loadPopularMovies() {
       const movieId = this.$route.params.id;
       this.loading = true;
@@ -352,12 +331,11 @@ export default {
         const response = await axios.get(url);
         const movies = [response.data];
 
-        // For each movie, fetch the credits (top-billed cast), trailers, and providers
         for (const movie of movies) {
           await this.loadCredits(movie);
-          await this.loadTrailer(movie); // Fetch trailer data here
+          await this.loadTrailer(movie);
           this.formatReleaseDate(movie);
-          await this.loadProviders(movie); // Fetch providers data here
+          await this.loadProviders(movie);
 
           const production_company = movie.production_companies.length > 0 ? movie.production_companies[0].name : 'Unknown';
           movie.production_companies = production_company;
@@ -365,10 +343,8 @@ export default {
           const genreNames = movie.genres.map(genre => genre.name).join(', ');
           movie.genres = genreNames;
 
-          // Fetch movie certifications
           const certificationResponse = await axios.get(`https://api.themoviedb.org/3/movie/${movie.id}/release_dates?api_key=${apiKey}`);
           const certificationData = certificationResponse.data;
-          // Extract certification for the US (or your target country)
           const usCertification = certificationData.results.find(release => release.iso_3166_1 === 'US');
           if (usCertification && usCertification.release_dates.length > 0) {
             movie.certification = usCertification.release_dates[0].certification;
@@ -385,7 +361,6 @@ export default {
       }
     },
 
-    // Fetch trailer data for a specific movie
     async loadTrailer(movie) {
       const url = `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}&language=en-US`;
 
@@ -394,14 +369,13 @@ export default {
         const trailer = response.data.results.find(video => video.site === 'YouTube' && video.type === 'Trailer');
 
         if (trailer) {
-          this.trailer = trailer; // Store trailer information
+          this.trailer = trailer;
         }
       } catch (err) {
         console.error(`Error fetching trailer for movie ${movie.title}:`, err);
       }
     },
 
-    // Fetch providers data for a specific movie
     async loadProviders(movie) {
       if (!movie) return;
 
@@ -413,8 +387,6 @@ export default {
 
         if (usProviders) {
           movie.providers = [];
-
-          // Add all available provider types
           if (usProviders.flatrate) {
             usProviders.flatrate.forEach(provider => {
               movie.providers.push({
@@ -453,10 +425,8 @@ export default {
       }
     },
 
-    // Search for movies based on the query
     async searchMovies() {
       if (!this.searchQuery) {
-        // If no search query, reload popular movies
         this.loadPopularMovies();
         return;
       }
@@ -464,23 +434,18 @@ export default {
       this.loading = true;
       this.error = null;
 
-      // Search for movies using the TMDB API
       const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${this.searchQuery}&language=en-US&page=1`;
 
       try {
         const response = await axios.get(url);
         const movies = response.data.results;
 
-        // For each movie, fetch the credits (top-billed cast), trailers, and providers
         for (const movie of movies) {
           await this.loadCredits(movie);
-          await this.loadTrailer(movie); // Fetch trailer data here
-          await this.loadProviders(movie); // Fetch providers data here
-
-          // Fetch movie certifications
+          await this.loadTrailer(movie);
+          await this.loadProviders(movie);
           const certificationResponse = await axios.get(`https://api.themoviedb.org/3/movie/${movie.id}/release_dates?api_key=${apiKey}`);
           const certificationData = certificationResponse.data;
-          // Extract certification for the US (or your target country)
           const usCertification = certificationData.results.find(release => release.iso_3166_1 === 'US');
           if (usCertification && usCertification.release_dates.length > 0) {
             movie.certification = usCertification.release_dates[0].certification;
@@ -497,60 +462,53 @@ export default {
       }
     },
 
-    // Load credits for a specific movie
     async loadCredits(movie) {
       const url = `https://api.themoviedb.org/3/movie/${movie.id}/credits?api_key=${apiKey}&language=en-US`;
 
       try {
         const response = await axios.get(url);
-        movie.credits = response.data; // Add credits to the movie object
+        movie.credits = response.data;
       } catch (err) {
         console.error(`Error fetching credits for movie ${movie.title}:`, err);
       }
     },
 
-    // Navigate to actor bio page
     viewActorBio(actor) {
       this.$router.push({
         name: 'bio',
         params: {
-          id: actor.id.toString() // Only use params defined in the route path
+          id: actor.id.toString()
         },
         query: {
-          name: actor.name // Use query for additional data not in the route path
+          name: actor.name
         }
       });
     },
 
-    // Format the release date to "DD/MM/YYYY"
     formatReleaseDate(movie) {
       if (movie.release_date) {
         const releaseDate = new Date(movie.release_date);
         const day = String(releaseDate.getDate()).padStart(2, '0');
-        const month = String(releaseDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const month = String(releaseDate.getMonth() + 1).padStart(2, '0');
         const year = releaseDate.getFullYear();
         movie.formattedReleaseDate = `${month}/${day}/${year}`;
       }
     },
 
-    // Format the release date to "DD/MM/YYYY"
     formatReleaseDate(movie) {
       if (movie.release_date) {
         const releaseDate = new Date(movie.release_date);
         const day = String(releaseDate.getDate()).padStart(2, '0');
-        const month = String(releaseDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const month = String(releaseDate.getMonth() + 1).padStart(2, '0');
         const year = releaseDate.getFullYear();
         movie.formattedReleaseDate = `${month}/${day}/${year}`;
       }
     },
 
-    // Get the top-billed cast (limit the number of top actors, e.g., 5)
     getTopCast(cast) {
-      //return cast.slice(0, 5); // Show only the first 5 actors
       return cast;
     },
 
-    // Format runtime to hours and minutes
     formatRuntime(runtime) {
       if (runtime >= 60) {
         const hours = Math.floor(runtime / 60);
@@ -572,34 +530,30 @@ export default {
 
     // Navigate to home page
     goToHome() {
-      this.currentPage = 1; // Reset the current page to 1
-      this.searchPage = 1; // Reset the search page
-      this.searchQuery = ''; // Reset the search query
+      this.currentPage = 1;
+      this.searchPage = 1;
+      this.searchQuery = '';
       window.scrollTo(0, 0);
       localStorage.setItem('StoredPage', this.currentPage);
-      localStorage.setItem('selectedCategory', ''); // Clear selected category in localStorage
-      this.loadPopularMovies(); // Load popular movies
+      localStorage.setItem('selectedCategory', '');
+      this.loadPopularMovies();
       window.location.href = 'http://localhost:5173/';
     },
 
     async handleMovieSelection(movieId) {
-      // Reset component state
       this.movies = [];
       this.loading = true;
       this.error = null;
 
       try {
-        // Fetch fresh movie data
         const movie = await this.fetchMovieDetails(movieId);
         if (movie) {
-          // Format the movie data
           this.formatReleaseDate(movie);
           movie.genres = Array.isArray(movie.genres) ? movie.genres : [];
           movie.production_companies = Array.isArray(movie.production_companies) ? movie.production_companies : [];
 
           this.movies = [movie];
 
-          // Load additional data
           await Promise.all([
             this.loadTrailer(movie),
             this.loadProviders(movie)
@@ -621,7 +575,6 @@ export default {
         );
         if (!response.ok) throw new Error('Movie fetch failed');
         const movie = await response.json();
-        // Initialize providers object
         movie.providers = { name: '', logo: '' };
         this.formatReleaseDate(movie);
         return movie;
@@ -639,7 +592,7 @@ export default {
     formatProductionCompanies(companies) {
       if (!companies || !Array.isArray(companies)) return '';
       return companies
-        .slice(0, 2) // Only show first two companies
+        .slice(0, 2)
         .map(company => company.name)
         .join(', ');
     },
@@ -648,11 +601,6 @@ export default {
 </script>
 
 <style scoped>
-body {
-  /* background: #0a0e27; */
-}
-
-/* Add modal styles */
 .modal {
   display: flex;
   justify-content: center;
@@ -690,7 +638,6 @@ body {
   cursor: pointer;
 }
 
-/* Existing styles */
 .error {
   color: red;
 }
@@ -814,25 +761,19 @@ section {
   transition: opacity 350ms ease-in-out 150ms, transform 350ms ease-in-out 150ms;
 }
 
-/* Hover effect for movie overview */
 .movie-overview {
   width: -webkit-fill-available;
   /* background-color: #fff; */
   padding: 10px;
   /* color: black; */
   opacity: 1;
-  /* Initially hidden */
   transform: translateY(0);
-  /* Initially at normal position */
   transition: opacity 0.3s ease, transform 0.3s ease;
-  /* Transition for both */
 }
 
 div:hover>.movie-overview {
   opacity: 1;
-  /* Fade in */
   transform: translateY(-0px);
-  /* Move the element up */
 }
 
 #app {
@@ -1185,14 +1126,11 @@ body {
   cursor: pointer;
   padding: 0;
   min-width: 44px;
-  /* Minimum touch target size */
   min-height: 44px;
-  /* Minimum touch target size */
   display: flex;
   align-items: center;
   justify-content: center;
   touch-action: manipulation;
-  /* Improve touch responsiveness */
 }
 
 .close-button:hover {
@@ -1201,7 +1139,6 @@ body {
 
 .close-button:active {
   transform: scale(0.95);
-  /* Visual feedback on tap */
 }
 
 .ollama-chat-messages {
@@ -1284,9 +1221,7 @@ body {
 .message-content {
   white-space: pre-wrap;
   background: #0f1329;
-  /* Preserve whitespace and line breaks */
   word-wrap: break-word;
-  /* Break long words */
 }
 
 .ollama-chat-input button {
@@ -1298,9 +1233,7 @@ body {
   cursor: pointer;
   font-weight: 500;
   min-height: 44px;
-  /* Minimum touch target size */
   touch-action: manipulation;
-  /* Improve touch responsiveness */
 }
 
 .ollama-chat-input button:hover {
@@ -1314,7 +1247,6 @@ body {
 
 .ollama-chat-input button:active {
   transform: scale(0.98);
-  /* Visual feedback on tap */
 }
 
 .loading-indicator {
@@ -1398,7 +1330,6 @@ body {
   letter-spacing: 1px;
 }
 
-/* Hamburger Menu Button */
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -1432,7 +1363,6 @@ body {
   transform: rotate(-45deg) translate(7px, -7px);
 }
 
-/* Navigation Menu */
 .nav-menu {
   display: flex;
   align-items: center;
@@ -1477,12 +1407,10 @@ body {
   font-size: 1.2rem;
 }
 
-/* Overlay */
 .nav-overlay {
   display: none;
 }
 
-/* Mobile Styles */
 @media (max-width: 768px) {
   .mobile-menu-toggle {
     display: flex;
@@ -1501,9 +1429,7 @@ body {
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
     z-index: 101;
     overflow-y: auto;
-    /* Enable vertical scrolling */
     overflow-x: hidden;
-    /* Prevent horizontal scrolling */
   }
 
   .nav-menu.is-active {
@@ -1515,7 +1441,6 @@ body {
     width: 100%;
     gap: 0;
     padding-bottom: 20px;
-    /* Add padding at bottom for better scrolling */
   }
 
   .nav-item {
@@ -1584,7 +1509,6 @@ body {
   }
 }
 
-/* Medium Mobile Styles */
 @media (max-width: 768px) {
   .ollama-chat-container {
     position: fixed;
@@ -1607,7 +1531,6 @@ body {
   }
 }
 
-/* Small Mobile Styles */
 @media (max-width: 480px) {
   .nav-container {
     padding: 0.75rem;
@@ -1658,7 +1581,6 @@ body {
 
   .ollama-chat-input textarea {
     font-size: 16px;
-    /* Prevents zoom on iOS */
   }
 
   .brand-text {
@@ -1675,7 +1597,6 @@ body {
   }
 }
 
-/* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
 
   .nav-menu,
