@@ -77,14 +77,10 @@ export default {
     sortedFilmography() {
       if (!this.credits || !this.credits.cast) return [];
 
-      // Sort by release date (newest first) and limit to top 200
       return [...this.credits.cast]
         .sort((a, b) => {
-          // Handle missing release dates
-          if (!a.release_date) return 1;  // Put items with no date at the end
+          if (!a.release_date) return 1;
           if (!b.release_date) return -1;
-
-          // Compare dates (newer movies first)
           return new Date(b.release_date) - new Date(a.release_date);
         })
         .slice(0, 200);
@@ -99,13 +95,11 @@ export default {
       this.error = null;
 
       try {
-        // Fetch actor details
         const actorResponse = await axios.get(
           `https://api.themoviedb.org/3/person/${this.id}?api_key=${apiKey}&language=en-US`
         );
         this.actorData = actorResponse.data;
 
-        // Fetch actor's movie credits
         const creditsResponse = await axios.get(
           `https://api.themoviedb.org/3/person/${this.id}/movie_credits?api_key=${apiKey}&language=en-US`
         );
@@ -126,15 +120,15 @@ export default {
       return date.toLocaleDateString('en-US', options);
     }
   },
-  // Navigate to home page
+
   goToHome() {
-    this.currentPage = 1; // Reset the current page to 1
-    this.searchPage = 1; // Reset the search page
-    this.searchQuery = ''; // Reset the search query
+    this.currentPage = 1;
+    this.searchPage = 1;
+    this.searchQuery = '';
     window.scrollTo(0, 0);
     localStorage.setItem('StoredPage', this.currentPage);
-    localStorage.setItem('selectedCategory', ''); // Clear selected category in localStorage
-    this.loadPopularMovies(); // Load popular movies
+    localStorage.setItem('selectedCategory', '');
+    this.loadPopularMovies();
     window.location.href = 'http://localhost:5173/';
   },
 };
