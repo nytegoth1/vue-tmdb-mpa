@@ -24,15 +24,15 @@
                   <li><router-link to="/" class="nostyle" @click="closeMenu">TMDB Movie Search</router-link></li>
                   <li class="nav-item">
                     <span v-if="isFavorite(movie.id)"><a class="nostyle fav"
-                        @click.prevent="handleToggleFavorite(movie)">Favorited ★</a></span><span v-else><a
-                        class="nostyle" @click.prevent="handleToggleFavorite(movie)">Favorites ★</a></span>
+                        @click.prevent="handleToggleFavorite(movie)">Favorited &bigstar;</a></span><span v-else><a
+                        class="nostyle" @click.prevent="handleToggleFavorite(movie)">Favorites &bigstar;</a></span>
                   </li>
                   <li class="nav-item">
                     <a class="nostyle" @click.prevent="handleOpenFavorites">View Favorites</a>
                   </li>
                   <li class="nav-item">
                     <a class="nostyle" @click.prevent="handleToggleChat">Ollama Chat <span
-                        v-if="showOllamaChat">▲</span><span v-else>▼</span></a>
+                        v-if="showOllamaChat">&#9650;</span><span v-else>	&#9660;</span></a>
                   </li>
                 </ul>
               </div>
