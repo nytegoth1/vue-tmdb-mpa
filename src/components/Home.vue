@@ -1249,7 +1249,7 @@ footer.app-footer {
 }
 
 .star-rating:before {
-  content: "*";
+  content: "\2605";
   color: gold;
 }
 
